@@ -1,5 +1,6 @@
 # importing the sys module
 import sys
+import time
 
 # the setrecursionlimit function is
 # used to modify the default recursion
@@ -12,12 +13,6 @@ sys.setrecursionlimit(10**8)
 class Solution:
     def part1(self, grid):
         ROWS, COLS = len(grid), len(grid[0])
-        dirs = {
-            "v": (1, 0),
-            "^": (-1, 0),
-            ">": (0, 1),
-            "<": (0, -1),
-        }
         alter: dict[tuple] = {
             (-1, 0): (1, 1),
             (0, 1): (1, -1),
@@ -30,37 +25,31 @@ class Solution:
             (-1, 0): (0, 1),
             (0, 1): (1, 0),
         }
-        res = 1
+        res = 0
 
-        def dfs(r, c, dir: tuple):
+        def checkCell(r, c):
             if r < 0 or c < 0 or r >= ROWS or c >= COLS:
-                return
-            if grid[r][c] == "#":
+                return False
+            return True
+
+        for row in range(ROWS):
+            for col in range(COLS):
+                if grid[row][col] == "^":
+                    s = grid[row][:col] + "." + grid[row][col + 1 :]
+                    grid[row] = s
+                    r, c = row, col
+        dir = (-1, 0)
+        while checkCell(r, c):
+            if grid[r][c] == "." or grid[r][c] == ",":
+                if grid[r][c] == ".":
+                    res += 1
+                    s = grid[r][:c] + "," + grid[r][c + 1 :]
+                    grid[r] = s
+                r, c = r + dir[0], c + dir[1]
+            elif grid[r][c] == "#":
                 alteration = alter[dir]
-                newDir = turn[dir]
-                dfs(
-                    r + alteration[0],
-                    c + alteration[1],
-                    newDir,
-                )
-                return
-            if grid[r][c] == ".":
-                nonlocal res
-                res += 1
-                s = grid[r][:c] + "X" + grid[r][c + 1 :]
-                grid[r] = s
-            dfs(
-                r + dir[0],
-                c + dir[1],
-                dir,
-            )
-            return
-
-        for r in range(ROWS):
-            for c in range(COLS):
-                if grid[r][c] in dirs:
-                    dfs(r, c, dirs[grid[r][c]])
-
+                dir = turn[dir]
+                r, c = r + alteration[0], c + alteration[1]
         return res
 
     def part2(self, grid):
@@ -137,10 +126,13 @@ class Solution:
 
 
 grid = []
-with open("day6TestInput.txt") as f:
+with open("day6RawInput.txt") as f:
     for line in f:
         grid.append(line.rstrip())
 
 obj = Solution()
-print(obj.part1(grid))
+t1 = time.time()
+print(obj.part1(grid.copy()))  # 0.01 seconds
+t2 = time.time()
+print(t2 - t1)
 # print(obj.part2(grid))
